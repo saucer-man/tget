@@ -1,0 +1,1 @@
+[2021-06-24  18:22:56] [INFO] <__main__> </Users/yanq/Documents/self/tget/tget.py]> (46) 测试日志
