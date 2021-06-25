@@ -5,7 +5,7 @@ from lib.log import init_log
 import time
 from lib.cmd import cmdparse
 from lib.data import conf
-from api import handle_fofa
+from api import handle_fofa,handle_zoomeye
 
 import os
 def set_log(verbose):
@@ -25,10 +25,13 @@ if __name__ == "__main__":
     res = set()
     if conf.api_name == "fofa":
         res = handle_fofa(conf.dork, conf.limit)
-
-    with open(conf.output, 'w') as f:
-        for i in res:
-            f.write(f"{i}\n")
-    data.logger.info(f"爬取到{len(res)}条数据，保存在{conf.output}中")
+    elif conf.api_name =="zoomeye":
+        res = handle_zoomeye(conf.dork, conf.limit)
+    else:
+        data.logger.error("illegal api type")
+    # with open(conf.output, 'w') as f:
+    #     for i in res:
+    #         f.write(f"{i}\n")
+    # data.logger.info(f"爬取到{len(res)}条数据，保存在{conf.output}中")
 
 

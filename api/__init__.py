@@ -3,7 +3,7 @@
 
 
 from api.fofa import handle_fofa
-# from api.zoomeye import handle_zoomeye
+from api.zoomeye import handle_zoomeye
 # from api.shodan import handle_shodan
 # from api.censys import handle_censys
 
