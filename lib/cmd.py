@@ -7,12 +7,15 @@ def cmdparse():
 
     parser.add_argument(dest='api_name', metavar='api_name')
 
-    parser.add_argument('-d', '--dork', metavar='dork', required=True,
-                        dest='dork', action='append',
+    parser.add_argument('-d', '--dork', metavar='dork', type=str,
+                        dest='dork',required=True,
                         help='dork pattern to search for')
-
+    parser.add_argument('-o', '--output', metavar='output', type=str,
+                        dest='output',default="tget_res.txt",
+                        help='output for result')
     parser.add_argument('-v', dest='verbose', action='store_true',
                         help='verbose mode')
-
+    parser.add_argument('--limit', metavar='limit', type=int, default=100,
+                        help='limit to search')
     args = parser.parse_args()
     return args

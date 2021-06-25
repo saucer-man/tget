@@ -7,8 +7,8 @@ See the file 'LICENSE' for copying permission
 """
 
 import copy
+import logging
 import types
-
 
 class AttribDict(dict):
     """
@@ -85,3 +85,5 @@ class AttribDict(dict):
 cmdLineOptions = AttribDict()
 
 conf = AttribDict()
+
+logger = logging.getLogger(__name__)
