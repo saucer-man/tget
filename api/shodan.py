@@ -1,68 +1,48 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-"""
-Copyright (c) saucerman (https://saucer-man.com)
-See the file 'LICENSE' for copying permission
-"""
-
 import sys
-from lib.core.data import paths, conf
-from lib.core.common import colorprint
-from lib.utils.config import ConfigFileParser
-from api.shodan import Shodan, APIError
+import shodan
+import config
+from lib import data
+import math
 
 
-class ShodanBase:
-    def __init__(self, query, limit, offset):
-        self.query = query
-        self.limit = limit
-        self.offset = offset
-        self.api_key = None
-
-    def login(self):
-        msg = '[+] Trying to login with credentials in config file: %s.' % paths.CONFIG_PATH
-        colorprint.green(msg)
-        self.api_key = ConfigFileParser().shodan_apikey()
-
-        if not self.api_key:
-            msg = '[*] Automatic authorization failed.'
-            colorprint.cyan(msg)
-            msg = '[*] Please input your Shodan API Key (https://account.shodan.io/).'
-            colorprint.cyan(msg)
-            self.api_key = input('[*] API KEY > ').strip()
-
-    def account_info(self):
+def handle_shodan(query, limit):
+    res = set()
+    api = shodan.Shodan(config.shodan_apikey)
+    data.logger.info("Trying to login with credentials in config file")
+    try:
+        account_info = api.info()
+    except shodan.exception.APIError as e:
+        data.logger.warn('Automatic authorization failed.')
+        data.logger.warn('Please input your Shodan API Key (https://account.shodan.io/).')
+        api.api_key = input('[*] API KEY > ').strip()
         try:
-            if not self.api_key:
-                colorprint.red("[-] Shodan api cant not be Null")
-                sys.exit()
-            api = Shodan(self.api_key)
             account_info = api.info()
-            msg = "[+] Available Shodan query credits: %d" % account_info.get('query_credits')
-            colorprint.green(msg)
-        except APIError as e:
-            colorprint.red(e)
-            sys.exit()
-        return True
+        except shodan.exception.APIError:
+            data.logger.error('Shodan API authorization failed, Please re-run it and enter a valid key.')
+            sys.exit(-1)
+    data.logger.info("Login successfully")
+    data.logger.info(f"user info: {account_info}")
+    data.logger.info(f"Available Shodan query credits: {account_info.get('query_credits')}")
+    if account_info.get('query_credits') == 0:
+        data.logger.warn("there is no api credits")
+        return res
+    # 计算出第一页和最后一页，每页100个
+    start_page = 1
+    end_page = math.ceil(limit / 100)
 
-    def api_query(self):
+    for page in range(start_page, end_page):
+        data.logger.debug(f"爬取第{page}页...")
         try:
-            api = Shodan(self.api_key)
-            result = api.search(query=self.query, offset=self.offset, limit=self.limit)
-        except APIError as e:
-            colorprint.red(e)
-            sys.exit()
-
-        if 'matches' in result:
+            result = api.search(query=query, page=page)
+            if not result.get('matches'):
+                data.logger.debug(f"第{page}页没有数据，停止爬取")
+                break
             for match in result.get('matches'):
-                conf.target.add(match.get('ip_str') + ':' + str(match.get('port')))
-        else:
-            pass
-
-
-def handle_shodan(query, limit, offset):
-    s = ShodanBase(query, limit, offset)
-    s.login()
-    s.account_info()
-    s.api_query()
+                res.add(match.get('ip_str') + ':' + str(match.get('port')))
+        except shodan.APIError as e:
+            data.logger.error(f"爬取第{page}页发生错误：{e}")
+            break
+    return res

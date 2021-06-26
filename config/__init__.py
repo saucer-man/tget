@@ -6,8 +6,8 @@ fofa_email = ""
 fofa_key = ""
 
 # shodan api_key from https://account.shodan.io
-shodao_apikey = ""
+shodan_apikey = ""
 
 # censys https://censys.io/account
-censys_uid = ""
+censys_id = ""
 censys_secret = ""

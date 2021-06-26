@@ -10,6 +10,7 @@ import copy
 import logging
 import types
 
+
 class AttribDict(dict):
     """
     This class defines the project object, inheriting from Python data
@@ -81,6 +82,7 @@ class AttribDict(dict):
             retVal.__setitem__(key, copy.deepcopy(value, memo))
 
         return retVal
+
 
 cmdLineOptions = AttribDict()
 

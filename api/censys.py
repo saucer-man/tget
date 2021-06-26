@@ -1,96 +1,43 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-
-"""
-Copyright (c) saucerman (https://saucer-man.com)
-See the file 'LICENSE' for copying permission
-"""
-
-
 import sys
-import time
-import json
-from config import *
-import requests
+import config
+import math
 
-API_URL = "https://censys.io/api/v1"
-
-
-def can_auto_login():
-    if UID and SECRET:
-        try:
-            res = requests.get(API_URL + "/data", auth=(UID, SECRET), timeout = 10)
-            if res.status_code != 200:
-                raise SystemExit
-            else:
-                return True
-        except:
-            return False
-    else:
-        return False
+from lib import data
+from censys.search import CensysIPv4
+from censys.search import CensysHosts
 
 
-def get_ip(query, page):
-    '''
-    Return ips and total amount when doing query
-    '''
-    data = {
-        "query": query,
-        "page": page,
-        "fields": ["ip", "protocols"]
-    }
-
+def handle_censys(query, limit):
+    res = set()
+    data.logger.info("Trying to login with credentials in config file")
     try:
-        res = requests.post(API_URL + "/search/ipv4", data=json.dumps(data), auth=(UID, SECRET))
-        results = res.json()
-        
-        if res.status_code != 200:
-            colorprint.red("error occurred: %s" % results["error"])
-            sys.exit(1)
-
-        # add result in some specific form
-        for result in results["results"]:
-            conf.target.add(result["ip"])
-
+        c = CensysIPv4(api_id=config.censys_id, api_secret=config.censys_secret)
+        account_info = c.account()
     except Exception as e:
-        colorprint.red(e)
+        print(e)
+        data.logger.warn(
+            "Automatic authorization failed.\n[*] Please input your censys API Key (https://censys.io/account/api).")
+        config.censys_id = input('ID > ').strip()
+        config.censys_secret = input('SECRET > ').strip()
+        try:
+            c = CensysIPv4(api_id=config.censys_id, api_secret=config.censys_secret)
+            account_info = c.account()
+        except:
+            data.logger.error('Censys API authorization failed, Please re-run it and enter a valid key.')
+            sys.exit(-1)
+    data.logger.info("Login successfully")
+    data.logger.info(f"user info: {account_info}")
+    h = CensysHosts(api_id=config.censys_id, api_secret=config.censys_secret)
 
-
-def handle_censys(query, limit, offset):
-    global UID
-    global SECRET
-    UID = ConfigFileParser().censys_UID()
-    SECRET = ConfigFileParser().censys_SECRET()
-    msg = '[+] Trying to login with credentials in config file: {}.' .format(paths.CONFIG_PATH)
-    colorprint.green(msg)
-    if not can_auto_login():
-        err_msg = '[-] Automatic authorization failed.\n[*] Please input your censys API Key (https://censys.io/account/api).'
-        colorprint.cyan(err_msg)
-        UID = input('[*] UID > ').strip()
-        SECRET = input('[*] SECRET > ').strip()
-        if not can_auto_login():
-            err_msg = "[-] authorization failed"
-            colorprint.red(err_msg)
-            sys.exit()
-
-    page_start = int(offset/100) + 1
-    page_stop = page_start + int(limit/100) + 1
-
-    for page in range(page_start, page_stop):
-        get_ip(query, page)
-
-        # the last loop dont need sleep
-        if page < page_stop - 1:
-            time.sleep(3)
-
-
-
-
-
-
-
-
-
-
-
+    pages = math.ceil(limit / 100)
+    page_cu = 1
+    # 这里只有ip，没有port。因为每个ip开放的port全在结果里面，没办法判断
+    for page in h.search(query=query, pages=pages):
+        data.logger.debug(f"爬取第{page_cu}页...")
+        for data_c in page:
+            res.add(data_c["ip"])
+        page_cu += 1
+    return res
