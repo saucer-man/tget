@@ -3,7 +3,9 @@
 fofa zoomeye shodan censys 目标采集器
 
 # how to use
+1. 写`config/__init__.py`配置文件
 
+2. search语句
 ```bash
 # fofa 搜索
 python tget.py fofa -d '"DB_PASSWORD" && title="phpinfo()"' -v --limit 150 -o result.txt
