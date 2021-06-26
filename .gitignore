@@ -130,4 +130,4 @@ dmypy.json
 log/
 .idea/
 tt/
-*.txt
+tget_res.txt
