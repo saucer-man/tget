@@ -1,13 +1,14 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys
-import config
 import math
+import sys
 
-from lib import data
-from censys.search import CensysIPv4
 from censys.search import CensysHosts
+from censys.search import CensysIPv4
+
+import config
+from lib import data
 
 
 def handle_censys(query, limit):

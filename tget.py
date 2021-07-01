@@ -1,21 +1,22 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 import logging
-
-from lib import data
-from lib.log import init_log
+import os
 import time
+
+from api import handle_fofa, handle_zoomeye, handle_shodan, handle_censys
+from lib import data
 from lib.cmd import cmdparse
 from lib.data import conf
-from api import handle_fofa, handle_zoomeye, handle_shodan, handle_censys
-import os
+from lib.log import init_log
 
 
 def set_log(verbose):
     log_dir = os.path.join(os.path.abspath(os.path.dirname(__file__)), '../log')
     if not os.path.exists(log_dir):
         os.makedirs(log_dir)
-    log_file = os.path.join(log_dir, f'{time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime())}.log')
+    log_filename = time.strftime("%Y-%m-%d_%H-%M-%S", time.localtime()) + ".log"
+    log_file = os.path.join(log_dir, log_filename)
     level = logging.INFO
     if verbose:
         level = logging.DEBUG

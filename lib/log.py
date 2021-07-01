@@ -1,7 +1,5 @@
 import logging
 import sys
-import os
-import time
 
 
 def init_log(name, level, filename):

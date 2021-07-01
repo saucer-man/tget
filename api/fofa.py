@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
-import sys
-import json
 import base64
+import json
+import math
+import sys
+
+import requests
+
 import config
 from lib import data
-import requests
-import math
 
 
 def check(email, key):  # verify email and key

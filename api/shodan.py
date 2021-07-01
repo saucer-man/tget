@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 # -*- coding: utf-8 -*-
 
+import math
 import sys
+
 import shodan
+
 import config
 from lib import data
-import math
 
 
 def handle_shodan(query, limit):
