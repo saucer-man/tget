@@ -28,6 +28,7 @@ if __name__ == "__main__":
     print(conf)
     set_log(conf.verbose)
     res = set()
+    data.logger.debug(f"dork:{conf.dork}")
     if conf.api_name == "fofa":
         res = handle_fofa(conf.dork, conf.limit)
     elif conf.api_name == "zoomeye":
