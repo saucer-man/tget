@@ -14,7 +14,7 @@ from lib import data
 
 def check(email, key):  # verify email and key
     if email and key:
-        auth_url = "https://fofa.so/api/v1/info/my?email={0}&key={1}".format(email, key)
+        auth_url = "https://fofa.info/api/v1/info/my?email={0}&key={1}".format(email, key)
         try:
             response = requests.get(auth_url, timeout=5)
             if response.status_code == 200:
@@ -46,7 +46,7 @@ def handle_fofa(query: str, limit: int):
     res = set()
     for page in range(start_page, end_page + 1):
         data.logger.debug(f"爬取第{page}页...")
-        url = f"https://fofa.so/api/v1/search/all?email={email}&key={key}&qbase64={query}&page={page}&size=100"
+        url = f"https://fofa.info/api/v1/search/all?email={email}&key={key}&qbase64={query}&page={page}&size=100"
         try:
             response = requests.get(url).text
             resp = json.loads(response)
