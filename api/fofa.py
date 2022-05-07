@@ -46,13 +46,19 @@ def handle_fofa(query: str, limit: int):
     res = set()
     for page in range(start_page, end_page + 1):
         data.logger.debug(f"爬取第{page}页...")
-        url = f"https://fofa.info/api/v1/search/all?email={email}&key={key}&qbase64={query}&page={page}&size=100"
+        url = f"https://fofa.info/api/v1/search/all?email={email}&key={key}&qbase64={query}&page={page}&size=100&fields=host,ip,protocol,port"
         try:
             response = requests.get(url).text
             resp = json.loads(response)
             if not resp["error"]:
                 for item in resp.get('results'):
-                    res.add(item[0])
+                    host = item[0]
+                    protocol = item[2]
+                    # 下面根据host,ip, protocal, port来组装，一般用host就够了，但是对于http/https还需要处理一下
+                    if protocol == "https" or protocol == "http":
+                        if not host.startswith("http"):
+                            host = protocol +"://" + host
+                    res.add(host)
             else:
                 data.logger.error(f"爬取第{page}页发生错误：{resp['errmsg']}")
                 break
